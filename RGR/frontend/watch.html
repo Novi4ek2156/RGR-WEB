@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchVideo — Просмотр</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/watch.css">
+  <link rel="stylesheet" href="/static/css/modals.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <button class="icon-btn" onclick="window.location='/'">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </button>
+      <a href="/" class="logo">
+        <svg class="logo-icon" viewBox="0 0 90 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="20" rx="4" fill="white"/>
+          <polygon points="11,5 22,10 11,15" fill="#1a1a1a"/>
+        </svg>
+        <span class="logo-text">WatchVideo</span>
+      </a>
+    </div>
+    <div class="header-center">
+      <div class="search-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search"
+               onkeydown="if(event.key==='Enter'){window.location='/?q='+encodeURIComponent(this.value)}">
+        <button class="search-btn" onclick="window.location='/?q='+encodeURIComponent(document.getElementById('searchInput').value)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+          <path d="M6.5 10h-2v2h2v-2zm0 4h-2v2h2v-2zm0-8h-2v2h2V6zm4 8h-2v2h2v-2zm0-4h-2v2h2v-2zm0-4h-2v2h2V6zm4 8h-2v2h2v-2zm0-4h-2v2h2v-2zm0-4h-2v2h2V6zm4 0h-2v2h2V6zm0 8h-2v2h2v-2zm0-4h-2v2h2v-2z"/>
+        </svg>
+      </button>
+      <a href="/upload.html" class="upload-btn" title="Загрузить видео">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+        </svg>
+        Загрузить
+      </a>
+      <div id="authButtons" class="auth-buttons">
+        <button class="btn-outline" id="loginBtn">Войти</button>
+        <button class="btn-primary" id="registerBtn">Регистрация</button>
+      </div>
+      <div id="userMenu" class="user-menu hidden">
+        <div class="avatar-wrap" id="avatarWrap">
+          <div class="user-avatar-icon" id="userAvatarIcon"></div>
+          <div class="dropdown" id="userDropdown">
+            <span class="dropdown-username" id="dropdownUsername"></span>
+            <a class="dropdown-link" href="/upload.html">Загрузить видео</a>
+            <button onclick="logout()">Выйти</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- WATCH CONTENT -->
+  <div class="watch-layout">
+    <div class="watch-main">
+      <!-- Player -->
+      <div class="player-container" id="playerContainer">
+        <video id="videoPlayer" preload="metadata"></video>
+        <div class="player-overlay" id="playerOverlay">
+          <div class="player-center-controls">
+            <button class="ctrl-btn" onclick="seekRel(-10)" title="−10 сек">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+            </button>
+            <button class="ctrl-btn play-pause-btn" id="playPauseBtn" onclick="togglePlay()">
+              <svg id="playIcon" viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="pauseIcon" viewBox="0 0 24 24" width="40" height="40" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-btn" onclick="seekRel(10)" title="+10 сек">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom controls bar -->
+      <div class="player-controls" id="playerControls">
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-track" id="progressTrack" onclick="seekTo(event)">
+            <div class="progress-played" id="progressPlayed"></div>
+            <div class="progress-thumb" id="progressThumb"></div>
+          </div>
+        </div>
+        <div class="controls-row">
+          <div class="controls-left">
+            <button class="ctrl-sm" onclick="togglePlay()" title="Play/Pause">
+              <svg id="playIcon2" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="pauseIcon2" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-sm" onclick="seekRel(10)" title="+10">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+            <div class="volume-wrap">
+              <button class="ctrl-sm" onclick="toggleMute()" id="muteBtn">
+                <svg id="volIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                </svg>
+              </button>
+              <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)">
+            </div>
+            <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+          </div>
+          <div class="controls-right">
+            <button class="ctrl-sm" title="Субтитры">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 12h4v2H4v-2zm10 6H4v-2h10v2zm6 0h-4v-2h4v2zm0-4H10v-2h10v2z"/></svg>
+            </button>
+            <button class="ctrl-sm" title="Мини-плеер">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z"/></svg>
+            </button>
+            <button class="ctrl-sm" title="Трансляция">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm18-7H5c-1.1 0-2 .9-2 2v3h2v-3h14v10h-5v2h5c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-5 8v-3h-2v3H9v2h3v3h2v-3h3v-2h-3z"/></svg>
+            </button>
+            <button class="ctrl-sm" onclick="toggleFullscreen()" title="Полный экран">
+              <svg id="fsIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video info -->
+      <div class="video-info-section" id="videoInfo">
+        <h1 class="video-title" id="videoTitle">Загрузка...</h1>
+        <div class="video-meta-row">
+          <span class="views-count" id="viewsCount"></span>
+          <div class="reaction-buttons">
+            <button class="reaction-btn" id="likeBtn" onclick="toggleReaction(true)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+              <span id="likeCount">0</span> лайков
+            </button>
+            <button class="reaction-btn" id="dislikeBtn" onclick="toggleReaction(false)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+              <span id="dislikeCount">0</span> дизлайков
+            </button>
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="channel-row">
+          <div class="channel-avatar" id="channelAvatar">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" style="opacity:.6"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </div>
+          <div class="channel-info">
+            <div class="channel-name" id="channelName">—</div>
+            <div class="channel-subs" id="channelSubs"></div>
+          </div>
+          <button class="subscribe-btn" id="subscribeBtn" onclick="toggleSubscribe()">Подписаться</button>
+        </div>
+        <div class="description-block" id="descriptionBlock">
+          <p class="description-text" id="videoDescription"></p>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="comments-section">
+        <h3 class="comments-title" id="commentsTitle">Комментарии</h3>
+        <div id="addCommentWrap" class="add-comment hidden">
+          <input type="text" id="commentInput" class="comment-input" placeholder="Добавьте комментарий...">
+          <button class="btn-red" onclick="postComment()">Отправить</button>
+        </div>
+        <div id="commentsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal (same as index) -->
+  <div class="modal-overlay hidden" id="authModal">
+    <div class="modal auth-modal">
+      <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Войти</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Sign up</button>
+      </div>
+      <div id="loginForm">
+        <div class="field">
+          <label>E-mail или логин:</label>
+          <input type="text" id="loginEmail" placeholder="Введите email или логин...">
+          <span class="field-error" id="loginEmailErr"></span>
+        </div>
+        <div class="field">
+          <label>Password:</label>
+          <input type="password" id="loginPassword" placeholder="">
+          <span class="field-error" id="loginPasswordErr"></span>
+        </div>
+        <span class="field-error" id="loginGlobalErr"></span>
+        <button class="btn-red full-width" onclick="doLogin()">Sign In</button>
+      </div>
+      <div id="registerForm" class="hidden">
+        <div class="field">
+          <label>E-mail:</label>
+          <input type="email" id="regEmail" placeholder="Enter your e-mail...">
+          <span class="field-error" id="regEmailErr"></span>
+        </div>
+        <div class="field">
+          <label>Username:</label>
+          <input type="text" id="regUsername" placeholder="Enter your name...">
+          <span class="field-error" id="regUsernameErr"></span>
+        </div>
+        <div class="field">
+          <label>Password:</label>
+          <input type="password" id="regPassword" placeholder="">
+          <span class="field-error" id="regPasswordErr"></span>
+        </div>
+        <div class="field">
+          <label>Confirm Password:</label>
+          <input type="password" id="regConfirm" placeholder="">
+          <span class="field-error" id="regConfirmErr"></span>
+        </div>
+        <span class="field-error" id="regGlobalErr"></span>
+        <button class="btn-red full-width" onclick="doRegister()">Sign Up</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/watch.js"></script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchVideo — Загрузка видео</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/modals.css">
+  <link rel="stylesheet" href="/static/css/upload.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <a href="/" class="icon-btn" title="Главная">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </a>
+      <a href="/" class="logo">
+        <svg class="logo-icon" viewBox="0 0 90 20" fill="none">
+          <rect width="28" height="20" rx="4" fill="white"/>
+          <polygon points="11,5 22,10 11,15" fill="#1a1a1a"/>
+        </svg>
+        <span class="logo-text">WatchVideo</span>
+      </a>
+    </div>
+    <div class="header-center">
+      <span class="page-title-header">Загрузка видео</span>
+    </div>
+    <div class="header-right">
+      <div id="authButtons" class="auth-buttons">
+        <button class="btn-outline" id="loginBtn">Войти</button>
+        <button class="btn-primary" id="registerBtn">Регистрация</button>
+      </div>
+      <div id="userMenu" class="user-menu hidden">
+        <div class="avatar-wrap" id="avatarWrap">
+          <div class="user-avatar-icon" id="userAvatarIcon"></div>
+          <div class="dropdown" id="userDropdown">
+            <span class="dropdown-username" id="dropdownUsername"></span>
+            <button onclick="logout()">Выйти</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- AUTH GUARD -->
+  <div id="authGuard" class="auth-guard hidden">
+    <div class="auth-guard-box">
+      <svg viewBox="0 0 24 24" width="56" height="56" fill="currentColor" style="opacity:.4;margin-bottom:16px">
+        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+      </svg>
+      <h2>Нужна авторизация</h2>
+      <p>Чтобы загружать видео, войдите или зарегистрируйтесь</p>
+      <div style="display:flex;gap:12px;margin-top:20px">
+        <button class="btn-outline" onclick="openModal('authModal');switchTab('login')">Войти</button>
+        <button class="btn-red" onclick="openModal('authModal');switchTab('register')">Зарегистрироваться</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD PAGE -->
+  <div id="uploadPage" class="upload-page hidden">
+    <div class="upload-layout">
+
+      <!-- LEFT: Drop zone / file info -->
+      <div class="upload-left">
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-inner" id="dropZoneInner">
+            <div class="drop-icon">
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="currentColor">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+              </svg>
+            </div>
+            <h2>Перетащите файл сюда</h2>
+            <p class="drop-sub">или</p>
+            <label class="btn-red" style="cursor:pointer;display:inline-block">
+              Выбрать файл
+              <input type="file" id="videoFile" accept="video/*" style="display:none">
+            </label>
+            <p class="drop-hint">MP4, WebM, OGG, MOV, AVI, MKV — до 4 ГБ</p>
+          </div>
+        </div>
+
+        <!-- File preview card (shown after selection) -->
+        <div class="file-card hidden" id="fileCard">
+          <div class="file-card-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+          </div>
+          <div class="file-card-info">
+            <div class="file-card-name" id="fileName">—</div>
+            <div class="file-card-meta" id="fileMeta">—</div>
+          </div>
+          <button class="file-card-remove" onclick="removeFile()" title="Убрать файл">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Form -->
+      <div class="upload-right">
+        <h1 class="upload-page-title">Детали видео</h1>
+
+        <!-- Thumbnail -->
+        <div class="thumb-upload-section">
+          <label class="section-label">Превью (обложка)</label>
+          <div class="thumb-upload-row">
+            <div class="thumb-preview" id="thumbPreview">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor" style="opacity:.3">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+              </svg>
+              <span>Нет обложки</span>
+            </div>
+            <div class="thumb-upload-controls">
+              <p class="thumb-hint">Загрузите картинку, которая будет показана в превью. Рекомендуем JPG или PNG, 1280×720 px.</p>
+              <label class="btn-outline" style="cursor:pointer;display:inline-block;margin-top:10px">
+                Загрузить обложку
+                <input type="file" id="thumbFile" accept="image/*" style="display:none" onchange="onThumbSelect(event)">
+              </label>
+              <button class="thumb-remove-btn hidden" id="thumbRemoveBtn" onclick="removeThumb()">Удалить обложку</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="field">
+          <label class="section-label">Название <span style="color:var(--red)">*</span></label>
+          <input type="text" id="uploadTitle" class="up-input" placeholder="Введите название видео..." maxlength="200">
+          <div class="char-counter"><span id="titleCount">0</span>/200</div>
+          <span class="field-error" id="uploadTitleErr"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="field">
+          <label class="section-label">Описание</label>
+          <textarea id="uploadDesc" class="up-textarea" rows="5"
+            placeholder="Расскажите о видео — тема, ключевые моменты, ссылки..."></textarea>
+        </div>
+
+        <!-- Progress -->
+        <div class="up-progress hidden" id="upProgress">
+          <div class="up-progress-label">
+            <span id="upProgressLabel">Загрузка...</span>
+            <span id="upProgressPct">0%</span>
+          </div>
+          <div class="up-progress-bar">
+            <div class="up-progress-fill" id="upProgressFill"></div>
+          </div>
+        </div>
+
+        <span class="field-error" id="uploadGlobalErr" style="display:block;margin-bottom:8px"></span>
+
+        <!-- Submit -->
+        <button class="publish-btn" id="publishBtn" onclick="doUpload()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12zm3 0l7 7 7-7h-4V8h-6v4H5z"
+              transform="rotate(180,12,12)"/>
+          </svg>
+          Опубликовать
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS screen -->
+  <div class="upload-success hidden" id="uploadSuccess">
+    <div class="success-box">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" width="56" height="56" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </div>
+      <h2>Видео опубликовано!</h2>
+      <p id="successTitle"></p>
+      <div class="success-actions">
+        <a class="btn-red" id="watchLink">Смотреть видео</a>
+        <button class="btn-outline" onclick="resetUpload()">Загрузить ещё</button>
+        <a class="btn-outline" href="/">На главную</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay hidden" id="authModal">
+    <div class="modal auth-modal">
+      <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Войти</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Sign up</button>
+      </div>
+      <div id="loginForm">
+        <div class="field">
+          <label>E-mail или логин:</label>
+          <input type="text" id="loginEmail" placeholder="Введите email или логин...">
+          <span class="field-error" id="loginEmailErr"></span>
+        </div>
+        <div class="field">
+          <label>Password:</label>
+          <input type="password" id="loginPassword">
+          <span class="field-error" id="loginPasswordErr"></span>
+        </div>
+        <span class="field-error" id="loginGlobalErr"></span>
+        <button class="btn-red full-width" onclick="doLogin()">Sign In</button>
+      </div>
+      <div id="registerForm" class="hidden">
+        <div class="field">
+          <label>E-mail:</label>
+          <input type="email" id="regEmail" placeholder="Enter your e-mail...">
+          <span class="field-error" id="regEmailErr"></span>
+        </div>
+        <div class="field">
+          <label>Username:</label>
+          <input type="text" id="regUsername" placeholder="Enter your name...">
+          <span class="field-error" id="regUsernameErr"></span>
+        </div>
+        <div class="field">
+          <label>Password:</label>
+          <input type="password" id="regPassword">
+          <span class="field-error" id="regPasswordErr"></span>
+        </div>
+        <div class="field">
+          <label>Confirm Password:</label>
+          <input type="password" id="regConfirm">
+          <span class="field-error" id="regConfirmErr"></span>
+        </div>
+        <span class="field-error" id="regGlobalErr"></span>
+        <button class="btn-red full-width" onclick="doRegister()">Sign Up</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/upload.js"></script>
+</body>
+</html>
